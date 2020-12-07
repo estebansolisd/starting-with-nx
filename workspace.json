@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "projects": {
+    "starting-with-nx-nextjs": {
+      "root": "apps/starting-with-nx-nextjs",
+      "sourceRoot": "apps/starting-with-nx-nextjs",
+      "projectType": "application",
+      "schematics": {},
+      "architect": {
+        "build": {
+          "builder": "@nrwl/next:build",
+          "options": {
+            "root": "apps/starting-with-nx-nextjs",
+            "outputPath": "dist/apps/starting-with-nx-nextjs"
+          },
+          "configurations": {
+            "production": {}
+          }
+        },
+        "serve": {
+          "builder": "@nrwl/next:server",
+          "options": {
+            "buildTarget": "starting-with-nx-nextjs:build",
+            "dev": true
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "starting-with-nx-nextjs:build:production",
+              "dev": false
+            }
+          }
+        },
+        "export": {
+          "builder": "@nrwl/next:export",
+          "options": {
+            "buildTarget": "starting-with-nx-nextjs:build:production"
+          }
+        },
+        "lint": {
+          "builder": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["apps/starting-with-nx-nextjs/**/*.{ts,tsx}"]
+          }
+        },
+        "test": {
+          "builder": "@nrwl/jest:jest",
+          "options": {
+            "jestConfig": "apps/starting-with-nx-nextjs/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "starting-with-nx-nextjs-e2e": {
+      "root": "apps/starting-with-nx-nextjs-e2e",
+      "sourceRoot": "apps/starting-with-nx-nextjs-e2e/src",
+      "projectType": "application",
+      "architect": {
+        "e2e": {
+          "builder": "@nrwl/cypress:cypress",
+          "options": {
+            "cypressConfig": "apps/starting-with-nx-nextjs-e2e/cypress.json",
+            "tsConfig": "apps/starting-with-nx-nextjs-e2e/tsconfig.e2e.json",
+            "devServerTarget": "starting-with-nx-nextjs:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "starting-with-nx-nextjs:serve:production"
+            }
+          }
+        },
+        "lint": {
+          "builder": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": [
+              "apps/starting-with-nx-nextjs-e2e/**/*.{js,ts}"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "cli": {
+    "defaultCollection": "@nrwl/next"
+  },
+  "schematics": {
+    "@nrwl/react": {
+      "application": {
+        "babel": true
+      }
+    },
+    "@nrwl/next": {
+      "application": {
+        "style": "css",
+        "linter": "eslint"
+      }
+    }
+  },
+  "defaultProject": "starting-with-nx-nextjs"
+}
