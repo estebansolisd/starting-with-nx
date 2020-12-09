@@ -1,4 +1,4 @@
-import React, { FormEvent, useState, MouseEvent, ChangeEvent } from 'react';
+import React, { FormEvent, useState, MouseEvent, ChangeEvent, useEffect } from 'react';
 import {
   Button,
   Grid,
@@ -34,11 +34,25 @@ export default function Index() {
   const [todos, setTodos] = useState<ITodo[]>([]);
   const [currentTodo, setCurrentTodo] = useState<ITodo>(initTodo);
 
+  useEffect(() => {
+    const rawTodos : string | null = localStorage.getItem("todos");
+
+    if (rawTodos) {
+      setTodos(JSON.parse(rawTodos))
+    }
+
+    //eslint-disable-next-line
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem("todos", JSON.stringify(todos));
+
+    //eslint-disable-next-line
+  }, [todos])
+
   const addTodo = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (currentTodo.id !== -1) {
-      console.log("Editing", currentTodo);
-
       setTodos(
         todos.map(
           (todo: ITodo) =>
@@ -46,7 +60,6 @@ export default function Index() {
         )
       );
     } else {
-      console.log("New", currentTodo);
       setTodos([...todos, {...currentTodo, id: todos.length + 1}]);
     }
     setCurrentTodo(initTodo);
@@ -61,6 +74,7 @@ export default function Index() {
               todo.id !== Number(e.currentTarget.dataset.el_value)
           )
         );
+        localStorage.setItem("todos", JSON.stringify(todos));
         break;
       case 'btnEditTodo':
         let todoToModify: ITodo =
@@ -104,11 +118,12 @@ export default function Index() {
                   <form onSubmit={addTodo}>
                     <Grid container spacing={2}>
                       <Grid item xs={12}>
-                        <Typography variant="h6">Add new TODO</Typography>
+                        <Typography variant="h6">Add new or edit TODO</Typography>
                       </Grid>
                       <Grid item xs={12}>
                         <TextField
                           name="title"
+                          autoComplete="off"
                           type="text"
                           value={currentTodo.title}
                           variant="outlined"
@@ -127,7 +142,7 @@ export default function Index() {
                         />
                       </Grid>
                       <Grid item xs={12} md={4}>
-                        <Button variant="contained" fullWidth type="submit">
+                        <Button disabled={!currentTodo.title || !currentTodo.date} variant="contained" fullWidth type="submit">
                           Save
                         </Button>
                       </Grid>
@@ -158,7 +173,7 @@ export default function Index() {
                         </ListItemIcon>
                         <ListItemText
                           id={`todo-id-${todo.id}`}
-                          primary={todo.title}
+                          primary={todo.title +" - "+ todo.date}
                         />
                         <ListItemSecondaryAction>
                           <IconButton
