@@ -1,6 +1,13 @@
-import React, { FormEvent, useState, MouseEvent, ChangeEvent, useEffect } from 'react';
+import React, {
+  FormEvent,
+  useState,
+  MouseEvent,
+  ChangeEvent,
+  useEffect,
+} from 'react';
 import {
   Button,
+  Checkbox,
   Grid,
   IconButton,
   List,
@@ -23,6 +30,7 @@ interface ITodo {
   id: number;
   title: string;
   date: string;
+  finished: boolean;
 }
 
 export default function Index() {
@@ -30,37 +38,37 @@ export default function Index() {
     date: '',
     id: -1,
     title: '',
+    finished: false,
   };
   const [todos, setTodos] = useState<ITodo[]>([]);
   const [currentTodo, setCurrentTodo] = useState<ITodo>(initTodo);
 
   useEffect(() => {
-    const rawTodos : string | null = localStorage.getItem("todos");
+    const rawTodos: string | null = localStorage.getItem('todos');
 
     if (rawTodos) {
-      setTodos(JSON.parse(rawTodos))
+      setTodos(JSON.parse(rawTodos));
     }
 
     //eslint-disable-next-line
-  }, [])
+  }, []);
 
   useEffect(() => {
-    localStorage.setItem("todos", JSON.stringify(todos));
+    localStorage.setItem('todos', JSON.stringify(todos));
 
     //eslint-disable-next-line
-  }, [todos])
+  }, [todos]);
 
   const addTodo = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (currentTodo.id !== -1) {
       setTodos(
-        todos.map(
-          (todo: ITodo) =>
-            todo.id === currentTodo.id ? currentTodo : todo
+        todos.map((todo: ITodo) =>
+          todo.id === currentTodo.id ? currentTodo : todo
         )
       );
     } else {
-      setTodos([...todos, {...currentTodo, id: todos.length + 1}]);
+      setTodos([...todos, { ...currentTodo, id: todos.length + 1 }]);
     }
     setCurrentTodo(initTodo);
   };
@@ -74,12 +82,10 @@ export default function Index() {
               todo.id !== Number(e.currentTarget.dataset.el_value)
           )
         );
-        localStorage.setItem("todos", JSON.stringify(todos));
         break;
       case 'btnEditTodo':
         let todoToModify: ITodo =
           JSON.parse(e.currentTarget.dataset.el_value || '') || initTodo;
-        console.log(todoToModify);
         setCurrentTodo(todoToModify);
         break;
       default:
@@ -88,7 +94,7 @@ export default function Index() {
   };
 
   const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: ChangeEvent<HTMLInputElement>
   ) => {
     let { name, value } = e.target;
     switch (e.target.name) {
@@ -98,6 +104,14 @@ export default function Index() {
           ...currentTodo,
           [name]: value,
         });
+        break;
+      case 'finished':
+        let { checked } = e.target;
+        setTodos(
+          todos.map((todo: ITodo) =>
+            todo.id === Number(value) ? {...todo, [name]: checked} : todo
+          )
+        );
         break;
       default:
         break;
@@ -118,7 +132,9 @@ export default function Index() {
                   <form onSubmit={addTodo}>
                     <Grid container spacing={2}>
                       <Grid item xs={12}>
-                        <Typography variant="h6">Add new or edit TODO</Typography>
+                        <Typography variant="h6">
+                          Add new or edit TODO
+                        </Typography>
                       </Grid>
                       <Grid item xs={12}>
                         <TextField
@@ -142,7 +158,12 @@ export default function Index() {
                         />
                       </Grid>
                       <Grid item xs={12} md={4}>
-                        <Button disabled={!currentTodo.title || !currentTodo.date} variant="contained" fullWidth type="submit">
+                        <Button
+                          disabled={!currentTodo.title || !currentTodo.date}
+                          variant="contained"
+                          fullWidth
+                          type="submit"
+                        >
                           Save
                         </Button>
                       </Grid>
@@ -159,34 +180,45 @@ export default function Index() {
                   <Typography variant="h6">Available TODOS</Typography>
                 </Grid>
                 <Grid item xs={12}>
-                  <List>
-                    {todos.map((todo: ITodo) => (
-                      <ListItem key={`todo-id-${todo.id}`} role={undefined}>
-                        <ListItemIcon>
-                          <IconButton
-                            onClick={handleClick}
-                            data-el_name="btnEditTodo"
-                            data-el_value={JSON.stringify(todo)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                        </ListItemIcon>
-                        <ListItemText
-                          id={`todo-id-${todo.id}`}
-                          primary={todo.title +" - "+ todo.date}
-                        />
-                        <ListItemSecondaryAction>
-                          <IconButton
-                            onClick={handleClick}
-                            data-el_name="btnDeleteTodo"
-                            data-el_value={todo.id}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </ListItemSecondaryAction>
-                      </ListItem>
-                    ))}
-                  </List>
+                  {todos.length ? (
+                    <List>
+                      {todos.map((todo: ITodo) => (
+                        <ListItem key={`todo-id-${todo.id}`} role={undefined}>
+                          <ListItemIcon>
+                            <IconButton
+                              onClick={handleClick}
+                              data-el_name="btnEditTodo"
+                              data-el_value={JSON.stringify(todo)}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <Checkbox onChange={handleChange} name="finished" value={todo.id} checked={todo.finished} />
+                          </ListItemIcon>
+                          <ListItemText
+                            id={`todo-id-${todo.id}`}
+                            primary={todo.title + ' - ' + todo.date}
+                          />
+                          <ListItemSecondaryAction>
+                            <IconButton
+                              onClick={handleClick}
+                              data-el_name="btnDeleteTodo"
+                              data-el_value={todo.id}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </ListItemSecondaryAction>
+                        </ListItem>
+                      ))}
+                    </List>
+                  ) : (
+                    <Typography
+                      variant="overline"
+                      className="mt-10"
+                      align="justify"
+                    >
+                      No todos available...
+                    </Typography>
+                  )}
                 </Grid>
               </Grid>
             </Paper>
